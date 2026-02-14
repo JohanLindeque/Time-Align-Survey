@@ -1,4 +1,6 @@
 using System;
+using Microsoft.EntityFrameworkCore;
+using TimeAlignSurvey.Data;
 using TimeAlignSurvey.Models.Entities;
 using TimeAlignSurvey.Repositories.Interfaces;
 
@@ -6,18 +8,33 @@ namespace TimeAlignSurvey.Repositories;
 
 public class RespondentResultRepository : IRespondentResultRepository
 {
-    public Task AddAsync(RespondentResult results)
+    private readonly SurveyAppDbContext _context;
+
+    public RespondentResultRepository(SurveyAppDbContext context)
     {
-        throw new NotImplementedException();
+        _context = context;
     }
 
-    public Task<List<RespondentResult>> GetAllAsync()
+    public async Task AddAsync(RespondentResult result)
     {
-        throw new NotImplementedException();
+        await _context.RespondentResults.AddAsync(result);
+
+        await _context.SaveChangesAsync();
     }
 
-    public Task<bool> HasSubmittedAsync(int respondentId)
+    public async Task<List<RespondentResult>> GetAllAsync()
     {
-        throw new NotImplementedException();
+        var allResults = await _context.RespondentResults.ToListAsync();
+
+        return allResults;
+    }
+
+    public async Task<bool> HasSubmittedAsync(int respondentId)
+    {
+        var hasSubmitted = await _context.RespondentResults.AnyAsync(r =>
+            r.RespondentId == respondentId
+        );
+
+        return hasSubmitted;
     }
 }

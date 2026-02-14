@@ -1,4 +1,8 @@
 using System;
+using System.Runtime.InteropServices;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.EntityFrameworkCore;
+using TimeAlignSurvey.Data;
 using TimeAlignSurvey.Models.Entities;
 using TimeAlignSurvey.Repositories.Interfaces;
 
@@ -6,18 +10,29 @@ namespace TimeAlignSurvey.Repositories;
 
 public class RespondentRepository : IRespondentRepository
 {
-    public Task<Respondent> AuthenticateUserLoginAsync(Respondent respondent)
+    private readonly SurveyAppDbContext _context;
+
+    public RespondentRepository(SurveyAppDbContext context)
     {
-        throw new NotImplementedException();
+        _context = context;
     }
 
-    public Task<Respondent> GetByIdAsync(int id)
+    public async Task<Respondent> GetByIdAsync(int id)
     {
-        throw new NotImplementedException();
+        var respondent = await _context.Respondents.FirstOrDefaultAsync(r => r.Id == id);
+
+        if (respondent == null)
+            throw new KeyNotFoundException($"Respondent with id {id} was not found.");
+
+        return respondent;
     }
 
-    public Task<IEnumerable<Respondent>> GetByUsernameAsync(Respondent respondent)
+    public async Task<Respondent?> GetByUsernameAsync(string username)
     {
-        throw new NotImplementedException();
+        var respondent = await _context.Respondents.FirstOrDefaultAsync(r =>
+            r.UserName == username
+        );
+
+        return respondent;
     }
 }
