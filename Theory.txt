@@ -1,0 +1,21 @@
+In this project I utilized the repository design pattern. This design seperates the logic that works with the data from the Survey database from the rest of the app such as the Service layer. The repositories  I created for Objectives, Questions, Respondents and RespondentResults only deals with retrieving or writing data to the database and no business logic.
+
+Here is an example :
+
+public class ObjectiveRepository : IObjectiveRepository
+{
+    private readonly SurveyAppDbContext _context;
+
+    public ObjectiveRepository(SurveyAppDbContext context)
+    {
+        _context = context;
+    }
+
+    public async Task<IEnumerable<Objective>> GetAllAsync()
+    {
+        return await _context.Objectives.ToListAsync();
+    }
+}
+
+
+The ObjectiveRepositoryonly retrieves data from the database, the service layer encompasses the business logic and calls this ObjectiveRepository when ever the app needs to read data from the Objectives table in the database.
