@@ -5,6 +5,6 @@ namespace TimeAlignSurvey.Repositories.Interfaces;
 
 public interface IRespondentRepository
 {
-    Task<Respondent?> GetByUsernameAsync(string userNmae);
-    Task<Respondent> GetByIdAsync(int id);
+    Task<Respondent?> GetByUsernameAsync(string userName);
+    
 }

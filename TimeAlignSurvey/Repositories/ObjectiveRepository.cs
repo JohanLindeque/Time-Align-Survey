@@ -17,8 +17,6 @@ public class ObjectiveRepository : IObjectiveRepository
 
     public async Task<IEnumerable<Objective>> GetAllAsync()
     {
-        var objectivesInDb = await _context.Objectives.ToListAsync();
-
-        return objectivesInDb;
+        return await _context.Objectives.ToListAsync();
     }
 }

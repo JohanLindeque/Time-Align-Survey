@@ -1,4 +1,5 @@
 using System;
+using System.Net.Http.Headers;
 using Microsoft.EntityFrameworkCore;
 using TimeAlignSurvey.Data;
 using TimeAlignSurvey.Models.Entities;
@@ -15,26 +16,20 @@ public class RespondentResultRepository : IRespondentResultRepository
         _context = context;
     }
 
-    public async Task AddAsync(RespondentResult result)
+    public async Task AddResponsesAsync(IEnumerable<RespondentResult> results)
     {
-        await _context.RespondentResults.AddAsync(result);
+        await _context.RespondentResults.AddRangeAsync(results);
 
         await _context.SaveChangesAsync();
     }
 
     public async Task<List<RespondentResult>> GetAllAsync()
     {
-        var allResults = await _context.RespondentResults.ToListAsync();
-
-        return allResults;
+        return await _context.RespondentResults.ToListAsync();
     }
 
     public async Task<bool> HasSubmittedAsync(int respondentId)
     {
-        var hasSubmitted = await _context.RespondentResults.AnyAsync(r =>
-            r.RespondentId == respondentId
-        );
-
-        return hasSubmitted;
+        return await _context.RespondentResults.AnyAsync(r => r.RespondentId == respondentId);
     }
 }
