@@ -7,7 +7,19 @@
 
 <h2>Survey</h2>
 
-@if (Questions == null)
+@if (IsLoading)
+{
+    <p>Loading...</p>
+}
+else if (HasAlreadySubmitted)
+{
+    <div class="alert alert-info">
+        <h4>Survey Already Submitted</h4>
+        <p>You have already submitted your survey. Thank you for your participation!</p>
+        <button class="btn btn-primary mt-2" @onclick="GoToLogin">Back to Login</button>
+    </div>
+}
+else if (Questions == null)
 {
     <p>Loading questions...</p>
 }
@@ -16,7 +28,7 @@ else
     <EditForm Model="@this" OnValidSubmit="SubmitSurvey">
         @for (int i = 0; i < Questions.Count; i++)
         {
-            var index = i; // Capture for lambda
+            var index = i; 
             <div class="mb-2">
                 <label>@Questions[i].QuestionText</label>
                 <InputNumber @bind-Value="Weights[index]" class="form-control" />
@@ -46,20 +58,37 @@ else
     private List<TimeAlignSurvey.Models.Entities.Question> Questions;
     private List<int> Weights;
     private string ErrorMessage = "";
+    private bool IsLoading = true;
+    private bool HasAlreadySubmitted = false;
 
     protected override async Task OnInitializedAsync()
     {
+        // Check authentication
         if (!AuthService.IsAuthenticated || AuthService.IsAdmin)
         {
             Navigation.NavigateTo("/");
             return;
         }
 
-        Questions = (await SurveyService.GetAllQuestionsAsync())
-                        .OrderBy(x => Guid.NewGuid()) // randomize
-                        .ToList();
+        try
+        {
+            // Check if user has already submitted
+            HasAlreadySubmitted = await SurveyService.HasUserSubmittedAsync(AuthService.CurrentUser.Id);
 
-        Weights = Enumerable.Repeat(0, Questions.Count).ToList();
+            if (!HasAlreadySubmitted)
+            {
+                // Load questions only if not submitted
+                Questions = (await SurveyService.GetAllQuestionsAsync())
+                    .OrderBy(x => Guid.NewGuid()) // randomize
+                    .ToList();
+
+                Weights = Enumerable.Repeat(0, Questions.Count).ToList();
+            }
+        }
+        finally
+        {
+            IsLoading = false;
+        }
     }
 
     private async Task SubmitSurvey()
@@ -71,10 +100,15 @@ else
         }
 
         var answers = Questions.Select((q, i) => new { q.Id, Weight = Weights[i] })
-                               .ToDictionary(x => x.Id, x => x.Weight);
+            .ToDictionary(x => x.Id, x => x.Weight);
 
         await SurveyService.SubmitSurveyAsync(AuthService.CurrentUser.Id, answers);
 
         Navigation.NavigateTo("/Confirmation");
+    }
+
+    private void GoToLogin()
+    {
+        Navigation.NavigateTo("/");
     }
 }
