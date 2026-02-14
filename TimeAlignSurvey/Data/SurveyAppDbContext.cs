@@ -19,7 +19,6 @@ public class SurveyAppDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        // Ensures each respondent can only answer each question once
         modelBuilder.Entity<RespondentResult>()
             .HasIndex(r => new { r.RespondentId, r.QuestionId })
             .IsUnique();

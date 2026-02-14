@@ -1,4 +1,39 @@
 ﻿@page
 @model TimeAlignSurvey.Components.Pages.SurveyModel
 @{
+    ViewData["Title"] = "Survey";
 }
+
+<h2>Survey</h2>
+
+<form method="post">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Question</th>
+                <th>Weight (%)</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (int i = 0; i < Model.Questions.Count; i++)
+            {
+                <tr>
+                    <td>@Model.Questions[i].QuestionText</td>
+                    <td>
+                        <input type="number"
+                               name="Weights[@i]"
+                               min="0" max="100"
+                               value="0"
+                               class="form-control"
+                               required />
+                        <input type="hidden" name="QuestionIds[@i]" value="@Model.Questions[i].Id" />
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <div class="text-danger">@Model.ErrorMessage</div>
+
+    <button type="submit" class="btn btn-success mt-2">Submit</button>
+</form>

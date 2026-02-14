@@ -1,4 +1,5 @@
 using System;
+using System.Net.Http.Headers;
 using Microsoft.EntityFrameworkCore;
 using TimeAlignSurvey.Data;
 using TimeAlignSurvey.Models.Entities;
@@ -17,8 +18,7 @@ public class QuestionRepository : IQuestionRepository
 
     public async Task<IEnumerable<Question>> GetAllAsync()
     {
-        var questionsInDb = await _context.Questions.ToListAsync();
+        return await _context.Questions.ToListAsync();
 
-        return questionsInDb;
     }
 }

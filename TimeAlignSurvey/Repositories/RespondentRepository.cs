@@ -1,6 +1,4 @@
 using System;
-using System.Runtime.InteropServices;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using TimeAlignSurvey.Data;
 using TimeAlignSurvey.Models.Entities;
@@ -17,22 +15,8 @@ public class RespondentRepository : IRespondentRepository
         _context = context;
     }
 
-    public async Task<Respondent> GetByIdAsync(int id)
-    {
-        var respondent = await _context.Respondents.FirstOrDefaultAsync(r => r.Id == id);
-
-        if (respondent == null)
-            throw new KeyNotFoundException($"Respondent with id {id} was not found.");
-
-        return respondent;
-    }
-
     public async Task<Respondent?> GetByUsernameAsync(string username)
     {
-        var respondent = await _context.Respondents.FirstOrDefaultAsync(r =>
-            r.UserName == username
-        );
-
-        return respondent;
+        return await _context.Respondents.FirstOrDefaultAsync(r => r.UserName == username);
     }
 }
