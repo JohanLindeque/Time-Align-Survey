@@ -1,0 +1,68 @@
+﻿@page "/Results"
+@rendermode InteractiveServer
+
+@inject TimeAlignSurvey.Services.Interfaces.ISurveyResultService ResultService
+@inject TimeAlignSurvey.Services.Interfaces.IRespondentAuthService AuthService
+@inject NavigationManager Navigation
+
+<h2>Survey Results</h2>
+
+@if (!AuthService.IsAdmin)
+{
+    <p>Access denied. Redirecting...</p>
+}
+else if (surveyResults == null)
+{
+    <p>Loading results...</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Question</th>
+                <th>Avg Respondent Weight</th>
+                <th>Manager Weight</th>
+                <th>Expectation Gap</th>
+                <th>Accuracy (%)</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var r in surveyResults)
+            {
+                <tr>
+                    <td>@r.QuestionName</td>
+                    <td>@r.RespondentAvgWeight</td>
+                    <td>@r.ManagerWeight</td>
+                    <td>@r.ExpectationGap</td>
+                    <td>@r.Accuracy</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <button class="btn btn-primary mt-2" @onclick="GoToLogin">Logout</button>
+}
+
+@code {
+    // Renamed field to avoid matching component name and made nullable
+    private List<TimeAlignSurvey.Models.DTO.ResultComparisonDto>? surveyResults;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Redirect non-admins immediately
+        if (!AuthService.IsAuthenticated || !AuthService.IsAdmin)
+        {
+            Navigation.NavigateTo("/");
+            return;
+        }
+
+        // Load survey results from service
+        surveyResults = (await ResultService.GetResultsAsync()).ToList();
+    }
+
+    private void GoToLogin()
+    {
+        Navigation.NavigateTo("/");
+    }
+}

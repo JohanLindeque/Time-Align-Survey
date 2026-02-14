@@ -1,0 +1,80 @@
+﻿@page "/Survey"
+@rendermode InteractiveServer
+
+@inject TimeAlignSurvey.Services.Interfaces.ISurveyService SurveyService
+@inject TimeAlignSurvey.Services.Interfaces.IRespondentAuthService AuthService
+@inject NavigationManager Navigation
+
+<h2>Survey</h2>
+
+@if (Questions == null)
+{
+    <p>Loading questions...</p>
+}
+else
+{
+    <EditForm Model="@this" OnValidSubmit="SubmitSurvey">
+        @for (int i = 0; i < Questions.Count; i++)
+        {
+            var index = i; // Capture for lambda
+            <div class="mb-2">
+                <label>@Questions[i].QuestionText</label>
+                <InputNumber @bind-Value="Weights[index]" class="form-control" />
+            </div>
+        }
+
+        <div class="mb-2">
+            <strong>Total: @Weights.Sum()%</strong>
+            @if (Weights.Sum() != 100)
+            {
+                <span class="text-danger"> (Must equal 100)</span>
+            }
+        </div>
+
+        <button type="submit" class="btn btn-primary mt-2" disabled="@(Weights.Sum() != 100)">
+            Submit Survey
+        </button>
+
+        @if (!string.IsNullOrEmpty(ErrorMessage))
+        {
+            <div class="text-danger mt-2">@ErrorMessage</div>
+        }
+    </EditForm>
+}
+
+@code {
+    private List<TimeAlignSurvey.Models.Entities.Question> Questions;
+    private List<int> Weights;
+    private string ErrorMessage = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!AuthService.IsAuthenticated || AuthService.IsAdmin)
+        {
+            Navigation.NavigateTo("/");
+            return;
+        }
+
+        Questions = (await SurveyService.GetAllQuestionsAsync())
+                        .OrderBy(x => Guid.NewGuid()) // randomize
+                        .ToList();
+
+        Weights = Enumerable.Repeat(0, Questions.Count).ToList();
+    }
+
+    private async Task SubmitSurvey()
+    {
+        if (Weights.Sum() != 100)
+        {
+            ErrorMessage = "Total weight must equal 100.";
+            return;
+        }
+
+        var answers = Questions.Select((q, i) => new { q.Id, Weight = Weights[i] })
+                               .ToDictionary(x => x.Id, x => x.Weight);
+
+        await SurveyService.SubmitSurveyAsync(AuthService.CurrentUser.Id, answers);
+
+        Navigation.NavigateTo("/Confirmation");
+    }
+}

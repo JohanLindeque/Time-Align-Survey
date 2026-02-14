@@ -1,0 +1,52 @@
+﻿@page "/"
+@rendermode InteractiveServer
+
+@inject TimeAlignSurvey.Services.Interfaces.IRespondentAuthService AuthService
+@inject NavigationManager Navigation
+
+<h2>Login</h2>
+
+<div class="mb-2">
+    <label>Username:</label>
+    <input @bind="Username" class="form-control" />
+</div>
+
+<div class="mb-2">
+    <label>Password:</label>
+    <input type="password" @bind="Password" class="form-control" />
+</div>
+
+<button class="btn btn-primary mt-2" @onclick="LoginAsync">Login</button>
+
+@if (!string.IsNullOrEmpty(ErrorMessage))
+{
+    <div class="text-danger mt-2">@ErrorMessage</div>
+}
+
+@code {
+    private string Username { get; set; } = "";
+    private string Password { get; set; } = "";
+    private string ErrorMessage { get; set; } = "";
+
+    private async Task LoginAsync()
+    {
+        ErrorMessage = ""; // reset error
+        var success = await AuthService.LoginAsync(Username, Password);
+
+        if (!success)
+        {
+            ErrorMessage = "Invalid username or password.";
+            return;
+        }
+
+        // Navigate in the interactive context
+        
+            if (AuthService.IsAdmin)
+                Navigation.NavigateTo("/Results");
+            else
+                Navigation.NavigateTo("/Survey");
+
+            @* StateHasChanged(); *@
+        
+    }
+}
