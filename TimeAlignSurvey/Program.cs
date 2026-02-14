@@ -2,6 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using TimeAlignSurvey.Components;
 using TimeAlignSurvey.Data;
 using TimeAlignSurvey.Data.DataSeeders;
+using TimeAlignSurvey.Repositories;
+using TimeAlignSurvey.Repositories.Interfaces;
 
 namespace TimeAlignSurvey;
 
@@ -19,6 +21,11 @@ public class Program
 
         // Add services to the container.
         builder.Services.AddRazorComponents().AddInteractiveServerComponents();
+
+        builder.Services.AddScoped<IQuestionRepository, QuestionRepository>();
+        builder.Services.AddScoped<IObjectiveRepository, ObjectiveRepository>();
+        builder.Services.AddScoped<IRespondentRepository, RespondentRepository>();
+        builder.Services.AddScoped<IRespondentResultRepository, RespondentResultRepository>();
 
         var app = builder.Build();
 
