@@ -1,0 +1,114 @@
+﻿@page "/Survey"
+@rendermode InteractiveServer
+
+@inject TimeAlignSurvey.Services.Interfaces.ISurveyService SurveyService
+@inject TimeAlignSurvey.Services.Interfaces.IRespondentAuthService AuthService
+@inject NavigationManager Navigation
+
+<h2>Survey</h2>
+
+@if (IsLoading)
+{
+    <p>Loading...</p>
+}
+else if (HasAlreadySubmitted)
+{
+    <div class="alert alert-info">
+        <h4>Survey Already Submitted</h4>
+        <p>You have already submitted your survey. Thank you for your participation!</p>
+        <button class="btn btn-primary mt-2" @onclick="GoToLogin">Back to Login</button>
+    </div>
+}
+else if (Questions == null)
+{
+    <p>Loading questions...</p>
+}
+else
+{
+    <EditForm Model="@this" OnValidSubmit="SubmitSurvey">
+        @for (int i = 0; i < Questions.Count; i++)
+        {
+            var index = i; 
+            <div class="mb-2">
+                <label>@Questions[i].QuestionText</label>
+                <InputNumber @bind-Value="Weights[index]" class="form-control" />
+            </div>
+        }
+
+        <div class="mb-2">
+            <strong>Total: @Weights.Sum()%</strong>
+            @if (Weights.Sum() != 100)
+            {
+                <span class="text-danger"> (Must equal 100)</span>
+            }
+        </div>
+
+        <button type="submit" class="btn btn-primary mt-2" disabled="@(Weights.Sum() != 100)">
+            Submit Survey
+        </button>
+
+        @if (!string.IsNullOrEmpty(ErrorMessage))
+        {
+            <div class="text-danger mt-2">@ErrorMessage</div>
+        }
+    </EditForm>
+}
+
+@code {
+    private List<TimeAlignSurvey.Models.Entities.Question> Questions;
+    private List<int> Weights;
+    private string ErrorMessage = "";
+    private bool IsLoading = true;
+    private bool HasAlreadySubmitted = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Check authentication
+        if (!AuthService.IsAuthenticated || AuthService.IsAdmin)
+        {
+            Navigation.NavigateTo("/");
+            return;
+        }
+
+        try
+        {
+            // Check if user has already submitted
+            HasAlreadySubmitted = await SurveyService.HasUserSubmittedAsync(AuthService.CurrentUser.Id);
+
+            if (!HasAlreadySubmitted)
+            {
+                // Load questions only if not submitted
+                Questions = (await SurveyService.GetAllQuestionsAsync())
+                    .OrderBy(x => Guid.NewGuid()) // randomize
+                    .ToList();
+
+                Weights = Enumerable.Repeat(0, Questions.Count).ToList();
+            }
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private async Task SubmitSurvey()
+    {
+        if (Weights.Sum() != 100)
+        {
+            ErrorMessage = "Total weight must equal 100.";
+            return;
+        }
+
+        var answers = Questions.Select((q, i) => new { q.Id, Weight = Weights[i] })
+            .ToDictionary(x => x.Id, x => x.Weight);
+
+        await SurveyService.SubmitSurveyAsync(AuthService.CurrentUser.Id, answers);
+
+        Navigation.NavigateTo("/Confirmation");
+    }
+
+    private void GoToLogin()
+    {
+        Navigation.NavigateTo("/");
+    }
+}

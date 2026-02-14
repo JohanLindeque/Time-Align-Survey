@@ -1,4 +1,7 @@
 using System;
+using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using TimeAlignSurvey.Models.Entities;
 using TimeAlignSurvey.Repositories.Interfaces;
 using TimeAlignSurvey.Services.Interfaces;
@@ -7,15 +10,15 @@ namespace TimeAlignSurvey.Services;
 
 public class RespondentAuthService : IRespondentAuthService
 {
-    private readonly IRespondentRepository _respondentRepo;
+    private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<RespondentAuthService> _logger;
 
     public RespondentAuthService(
-        IRespondentRepository respondentRepo,
+        IServiceScopeFactory scopeFactory,
         ILogger<RespondentAuthService> logger
     )
     {
-        _respondentRepo = respondentRepo;
+        _scopeFactory = scopeFactory;
         _logger = logger;
     }
 
@@ -30,13 +33,15 @@ public class RespondentAuthService : IRespondentAuthService
         if (userName == "admin" && password == "P@ssw0rd")
         {
             CurrentUser = new Respondent { Id = 6, UserName = "admin" };
-
             return true;
         }
 
         try
         {
-            var user = await _respondentRepo.GetByUsernameAsync(userName);
+            using var scope = _scopeFactory.CreateScope();
+            var respondentRepo = scope.ServiceProvider.GetRequiredService<IRespondentRepository>();
+
+            var user = await respondentRepo.GetByUsernameAsync(userName);
 
             if (user == null)
                 return false;
@@ -45,7 +50,6 @@ public class RespondentAuthService : IRespondentAuthService
                 return false;
 
             CurrentUser = user;
-
             return true;
         }
         catch (Exception ex)

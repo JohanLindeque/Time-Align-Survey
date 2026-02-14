@@ -1,0 +1,16 @@
+﻿@page "/Confirmation"
+@rendermode InteractiveServer
+
+@inject NavigationManager Navigation
+
+<h2>Thank You!</h2>
+<p>Your survey has been submitted successfully.</p>
+
+<button class="btn btn-primary mt-2" @onclick="GoToLogin">Logout</button>
+
+@code {
+    private void GoToLogin()
+    {
+        Navigation.NavigateTo("/");
+    }
+}
