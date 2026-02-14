@@ -1,0 +1,87 @@
+﻿@page "/Results"
+@rendermode InteractiveServer
+
+@inject TimeAlignSurvey.Services.Interfaces.ISurveyResultService ResultService
+@inject TimeAlignSurvey.Services.Interfaces.IRespondentAuthService AuthService
+@inject NavigationManager Navigation
+
+<h2>Survey Results</h2>
+
+@if (!AuthService.IsAdmin)
+{
+    <p>Access denied. Redirecting...</p>
+}
+else if (surveyResults == null)
+{
+    <p>Loading results...</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Question</th>
+                <th>Avg Respondent Weight</th>
+                <th>Manager Weight</th>
+                <th>Expectation Gap</th>
+                <th>Accuracy (%)</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var r in surveyResults)
+            {
+                <tr>
+                    <td>@r.QuestionName</td>
+                    <td>@r.RespondentAvgWeight</td>
+                    <td>@r.ManagerWeight</td>
+                    <td>@r.ExpectationGap</td>
+                    <td class="@GetAccuracyColorClass(r.Accuracy)">
+                        @r.Accuracy
+                    </td>
+                </tr>
+            }
+            <!-- Total Row -->
+            <tr class="fw-bold table-secondary">
+                <td>Total</td>
+                <td>@surveyResults.Sum(r => r.RespondentAvgWeight).ToString("F2")</td>
+                <td>@surveyResults.Sum(r => r.ManagerWeight).ToString("F2")</td>
+                <td>@surveyResults.Sum(r => r.ExpectationGap).ToString("F2")</td>
+                <td>-</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <button class="btn btn-primary mt-2" @onclick="GoToLogin">Logout</button>
+}
+
+@code {
+    private List<TimeAlignSurvey.Models.DTO.ResultComparisonDto>? surveyResults;
+
+    protected override async Task OnInitializedAsync()
+    {
+        
+        if (!AuthService.IsAuthenticated || !AuthService.IsAdmin)
+        {
+            Navigation.NavigateTo("/");
+            return;
+        }
+
+        
+        surveyResults = (await ResultService.GetResultsAsync()).ToList();
+    }
+
+    private void GoToLogin()
+    {
+        Navigation.NavigateTo("/");
+    }
+
+    private string GetAccuracyColorClass(decimal accuracy)
+    {
+        if (accuracy > 0)
+            return "text-success"; 
+        else if (accuracy < 0)
+            return "text-danger";  
+        else
+            return "";            
+    }
+}

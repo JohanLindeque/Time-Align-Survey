@@ -4,6 +4,8 @@ using TimeAlignSurvey.Data;
 using TimeAlignSurvey.Data.DataSeeders;
 using TimeAlignSurvey.Repositories;
 using TimeAlignSurvey.Repositories.Interfaces;
+using TimeAlignSurvey.Services;
+using TimeAlignSurvey.Services.Interfaces;
 
 namespace TimeAlignSurvey;
 
@@ -16,7 +18,7 @@ public class Program
         // db context
         builder.Services.AddDbContext<SurveyAppDbContext>(options =>
         {
-            options.UseSqlServer(builder.Configuration.GetConnectionString("BookNestDB"));
+            options.UseSqlServer(builder.Configuration.GetConnectionString("SurveyDB"));
         });
 
         // Add services to the container.
@@ -27,13 +29,16 @@ public class Program
         builder.Services.AddScoped<IRespondentRepository, RespondentRepository>();
         builder.Services.AddScoped<IRespondentResultRepository, RespondentResultRepository>();
 
+        builder.Services.AddSingleton<IRespondentAuthService, RespondentAuthService>();
+        builder.Services.AddScoped<ISurveyResultService, SurveyResultService>();
+        builder.Services.AddScoped<ISurveyService, SurveyService>();
+
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.
         if (!app.Environment.IsDevelopment())
         {
             app.UseExceptionHandler("/Error");
-            // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
             app.UseHsts();
         }
 
