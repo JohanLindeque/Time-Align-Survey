@@ -1,4 +1,33 @@
 ﻿@page
 @model TimeAlignSurvey.Components.Pages.ResultsModel
 @{
+    ViewData["Title"] = "Results";
 }
+
+<h2>Survey Results</h2>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Question</th>
+            <th>Avg Respondent Weight</th>
+            <th>Manager Weight</th>
+            <th>Expectation Gap</th>
+            <th>Accuracy (%)</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var r in Model.Results)
+        {
+            <tr>
+                <td>@r.QuestionName</td>
+                <td>@r.RespondentAvgWeight</td>
+                <td>@r.ManagerWeight</td>
+                <td>@r.ExpectationGap</td>
+                <td>@r.Accuracy</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<a href="/Login" class="btn btn-primary mt-2">Logout</a>

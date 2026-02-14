@@ -24,7 +24,9 @@ public class SurveyService : ISurveyService
 
     public async Task<IEnumerable<Question>> GetAllQuestionsAsync()
     {
-        return await _questionRepo.GetAllAsync();
+        var questions = await _questionRepo.GetAllAsync();
+
+        return questions.OrderBy(q => Guid.NewGuid()).ToList();
     }
 
     public async Task<bool> HasUserSubmittedAsync(int respondentId)
