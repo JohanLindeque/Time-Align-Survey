@@ -35,9 +35,19 @@ else
                     <td>@r.RespondentAvgWeight</td>
                     <td>@r.ManagerWeight</td>
                     <td>@r.ExpectationGap</td>
-                    <td>@r.Accuracy</td>
+                    <td class="@GetAccuracyColorClass(r.Accuracy)">
+                        @r.Accuracy
+                    </td>
                 </tr>
             }
+            <!-- Total Row -->
+            <tr class="fw-bold table-secondary">
+                <td>Total</td>
+                <td>@surveyResults.Sum(r => r.RespondentAvgWeight).ToString("F2")</td>
+                <td>@surveyResults.Sum(r => r.ManagerWeight).ToString("F2")</td>
+                <td>@surveyResults.Sum(r => r.ExpectationGap).ToString("F2")</td>
+                <td>-</td>
+            </tr>
         </tbody>
     </table>
 
@@ -45,24 +55,33 @@ else
 }
 
 @code {
-    // Renamed field to avoid matching component name and made nullable
     private List<TimeAlignSurvey.Models.DTO.ResultComparisonDto>? surveyResults;
 
     protected override async Task OnInitializedAsync()
     {
-        // Redirect non-admins immediately
+        
         if (!AuthService.IsAuthenticated || !AuthService.IsAdmin)
         {
             Navigation.NavigateTo("/");
             return;
         }
 
-        // Load survey results from service
+        
         surveyResults = (await ResultService.GetResultsAsync()).ToList();
     }
 
     private void GoToLogin()
     {
         Navigation.NavigateTo("/");
+    }
+
+    private string GetAccuracyColorClass(decimal accuracy)
+    {
+        if (accuracy > 0)
+            return "text-success"; 
+        else if (accuracy < 0)
+            return "text-danger";  
+        else
+            return "";            
     }
 }
