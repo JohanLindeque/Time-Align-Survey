@@ -1,7 +1,7 @@
-# SurveyGap - Team Time Allocation Survey Application
+# TimeAlign - Team Time Allocation Survey Application
 
 ## Overview
-SurveyGap is a web-based survey application that assesses how software development teams distribute their time across different work activities during a productive week. The application compares actual time allocation against managerial objectives to reveal the "expectation gap" - showing where team reality differs from management expectations.
+TimeAlign is a web-based survey application that assesses how software development teams distribute their time across different work activities during a productive week. The application compares actual time allocation against managerial objectives to reveal the "expectation gap" - showing where team reality differs from management expectations.
 
 ## Purpose
 
@@ -33,7 +33,7 @@ This application helps teams and managers:
 
 ## Technical Stack
 
-Framework: Blazor (WASM or Server-Side)
+Framework: Blazor (Server-Side)
 Language: C#
 Database: SQL Server or MySQL
 ORM: Entity Framework Core
